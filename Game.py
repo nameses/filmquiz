@@ -1,11 +1,7 @@
+import random
 from random import randint
-
-from aiogram import Bot, Dispatcher, types
-from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup, InputMedia, InputMediaPhoto
-import logging
-import requests
-import json
-import csv
+from aiogram import types
+from aiogram.types import InputFile, InlineKeyboardButton, InlineKeyboardMarkup
 import tmdbsimple as tmdb
 import constants
 from settings import Settings
@@ -28,21 +24,21 @@ class PhotoQuiz(Quiz):
         self.trueMovieID = None
 
     async def startPhotoQuiz(self):
+        # id of movie with correct id
         self.trueMovieID = self.getRandomMovieID()
         movie = tmdb.Movies(self.trueMovieID)
-
-        array = movie.images()
-        backdropsSize = 0
-        for element in array['backdrops']:
-            backdropsSize += 1
+        # get images to movie
+        array = movie.images(include_image_language='null')
+        # if there are no images without text, get all ones
+        if len(array['backdrops']) == 0:
+            array = movie.images()
+        # form new query and get a file of random image of film from url
         new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
-            [randint(0, backdropsSize - 1)]['file_path']
+            [randint(0, len(array['backdrops']) - 1)]['file_path']
         file = InputFile.from_url(url=new_query)
-
+        # to receive movie.title
         response = movie.info()
-        # media = types.input_media.InputMediaPhoto(file.file)
-        # await Settings.BOT.send_message(chat_id=self.message.from_user.id, text="Make your choice!")
-
+        # delete, receive points and send a new quiz with points update or just send new quiz
         if self.canBeEdited:
             text = self.message.text.title()
             await self.message.delete()
@@ -53,54 +49,113 @@ class PhotoQuiz(Quiz):
             await Settings.BOT.send_photo(chat_id=self.message.from_user.id,
                                           photo=file, caption='Try to guess',
                                           reply_markup=self.prepareKeyboard(movie.title))
-        #     await self.message.delete()
 
-    def prepareKeyboard(self, correctChoice):
+    def prepareKeyboard(self, correctChoice) -> InlineKeyboardMarkup:
+        """
+        Method, that returns a working inline keyboard with variants of films
+        :param correctChoice:
+        :return InlineKeyboardMarkup:
+        """
+        VARIANTS_QUANTITY = 4
+        # button with correct choice
         button1 = InlineKeyboardButton(correctChoice, callback_data='true')
-        listTitles = self.getMovieVariants(quantity=3)
+        # get list of VARIANTS_QUANTITY movies' titles
+        listTitles = self.getMovieVariants(quantity=VARIANTS_QUANTITY - 1, titleToAvoid=correctChoice)
+        # buttons with uncorrect choices
         button2 = InlineKeyboardButton(listTitles[0], callback_data='false')
         button3 = InlineKeyboardButton(listTitles[1], callback_data='false')
         button4 = InlineKeyboardButton(listTitles[2], callback_data='false')
-
+        # keyboard init
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(button1) \
-            .add(button2) \
-            .add(button3) \
-            .add(button4)
+        # sort buttons in random order
+        listButtons = [button1, button2, button3, button4]
+        listIndexes = [0, 1, 2, 3]
+        for i in range(0, VARIANTS_QUANTITY):
+            randIndex = random.randint(0, listIndexes.__len__() - 1)
+            keyboard.add(listButtons[listIndexes[randIndex]])
+            listIndexes.remove(listIndexes[randIndex])
         return keyboard
 
     def getRandomMovieID(self) -> int:
+        """
+        get random movie ID from listID in MoviesHelper
+        :return int:
+        """
         return MoviesHelper.getRandomMovieIDFromList()
 
-    def getMovieVariants(self, quantity) -> list:
+    def getMovieVariants(self, quantity=3, titleToAvoid=None) -> list:
+        """
+        get list of similar/random movies
+        :param titleToAvoid:
+        :param quantity:
+        :return list:
+        """
         list = []
-        list.extend(self.getRandomMovieTitle(quantity=1))
-        list.extend(self.getSimilarMovieTitle(quantity=2))
+        # # 1/3 of quantity will be from similar list, everything else is random movies
+        # quantitySimilarMovies = quantity // 3
+        list.extend(self.getSimilarMovieTitle(quantity=quantity, titleToAvoid=titleToAvoid))
+        # list.extend(self.getRandomMovieTitle(quantity=quantity))
         return list
 
-    def getSimilarMovieTitle(self, quantity) -> list:
+    def getSimilarMovieTitle(self, quantity: int, titleToAvoid: str) -> list:
+        """
+        returns list of similar movies of param quantity with title != param titleToAvoid
+        :param quantity:
+        :param titleToAvoid:
+        :return:
+        """
         list = []
-        # self.trueMovieID
+        # get similar movies list
         movie = tmdb.Movies(self.trueMovieID)
-        responseArr = movie.recommendations()
-        size = 0
-        for element in responseArr['results']:
-            size += 1
-        if size == 1:
-            list.append(responseArr['results'][0]['title'])
-            list.extend(self.getRandomMovieTitle(quantity=1))
+        responseArr = movie.similar_movies()
+        # responseArr['results'] is results array
+        # if list has 1 element -> add it to list
+        size = len(responseArr['results'])
+        if size == 0:
+            # get random movies
+            while True:
+                title = self.getRandomMovieTitle(quantity=quantity, titleToAvoid=titleToAvoid)
+                if title != titleToAvoid:
+                    break
+            list.extend(title)
+        elif size == 1 and quantity >= 2:
+            # 1 similar and other are random
+            while True:
+                title = responseArr['results'][0]['title']
+                if title != titleToAvoid:
+                    break
+            list.append(title)
+            list.extend(self.getRandomMovieTitle(quantity=quantity - 1, titleToAvoid=titleToAvoid))
+        elif size == 1 and quantity == 1:
+            # 1 similar movie
+            while True:
+                title = responseArr['results'][0]['title']
+                if title != titleToAvoid:
+                    break
+            list.append(title)
         else:
+            # many random movies
             for i in range(0, quantity):
                 list.append(responseArr['results'][randint(0, size - 1)]['title'])
         return list
 
-    def getRandomMovieTitle(self, quantity) -> list:
+    def getRandomMovieTitle(self, quantity: int, titleToAvoid: str) -> list:
+        """
+        returns list of random movies of param quantity with title != param titleToAvoid
+        :param quantity:
+        :param titleToAvoid:
+        :return:
+        """
         list = []
         for i in range(0, quantity):
-            randMovieID = self.getRandomMovieID()
-            movie = tmdb.Movies(randMovieID)
-            response = movie.info()
-            list.append(movie.title)
+            while True:
+                randMovieID = self.getRandomMovieID()
+                movie = tmdb.Movies(randMovieID)
+                response = movie.info()
+                title = movie.title
+                if title != titleToAvoid:
+                    break
+            list.append(title)
         return list
 
 

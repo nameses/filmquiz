@@ -1,15 +1,11 @@
 import asyncio
-
 from aiogram import types
 import logging
-# import requests
-# import json
-# import constants
 import Game
 from settings import Settings
-import MoviesHelper
 
 logging.basicConfig(level=logging.INFO)
+QUIZ_MESSAGE = 'Try to guess another quiz.'
 
 
 @Settings.DISPATCHER.message_handler(content_types=types.ContentType.TEXT, commands=["test"])
@@ -33,16 +29,13 @@ async def cmd_start(message: types.Message):
                          "\\game -> start quiz.\n\\statistic -> show player statistic.")
 
 
-QUIZ_MESSAGE = 'Try to guess another quiz.'
-
-
 @Settings.DISPATCHER.callback_query_handler(lambda c: c.data == 'true')
 async def process_button_true(callback_query: types.CallbackQuery):
     id = callback_query.from_user.id
     await callback_query.message.delete()
     mes = await Settings.BOT.send_message(chat_id=id, text='+2 points.\n' + QUIZ_MESSAGE)
     factory = Game.QuizFactory()
-    quiz = factory.createPhotoQuiz(mes, id,  canBeEdited=True)
+    quiz = factory.createPhotoQuiz(mes, id, canBeEdited=True)
     await quiz.startPhotoQuiz()
 
 
@@ -52,12 +45,11 @@ async def process_button_false(callback_query: types.CallbackQuery):
     await callback_query.message.delete()
     mes = await Settings.BOT.send_message(chat_id=id, text='-3 points.\n' + QUIZ_MESSAGE)
     factory = Game.QuizFactory()
-    quiz = factory.createPhotoQuiz(mes, id,  canBeEdited=True)
+    quiz = factory.createPhotoQuiz(mes, id, canBeEdited=True)
     await quiz.startPhotoQuiz()
 
 
 async def main():
-    # moviesHelper = MoviesHelper()
     await Settings.DISPATCHER.start_polling(Settings.BOT)
 
 
