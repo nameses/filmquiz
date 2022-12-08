@@ -16,13 +16,15 @@ tmdb.API_KEY = constants.TMDB_TOKEN
 
 
 class Quiz:
-    def __init__(self, message: types.Message):
+    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
         self.message = message
+        self.user_id = user_id
+        self.canBeEdited = canBeEdited
 
 
 class PhotoQuiz(Quiz):
-    def __init__(self, message: types.Message):
-        super().__init__(message)
+    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
+        super().__init__(message, user_id, canBeEdited)
         self.trueMovieID = None
 
     async def startPhotoQuiz(self):
@@ -38,17 +40,20 @@ class PhotoQuiz(Quiz):
         file = InputFile.from_url(url=new_query)
 
         response = movie.info()
-
+        # media = types.input_media.InputMediaPhoto(file.file)
         # await Settings.BOT.send_message(chat_id=self.message.from_user.id, text="Make your choice!")
-        if self.message is None:
-            await Settings.BOT.send_message(chat_id=self.message.from_user.id,
-                                            text='Try to guess', photo=file,
-                                            reply_markup=self.prepareKeyboard(movie.title))
-            await Settings.BOT.edit_message_media(media=file)
+
+        if self.canBeEdited:
+            text = self.message.text.title()
+            await self.message.delete()
+            await Settings.BOT.send_photo(chat_id=self.user_id,
+                                          photo=file, caption=text,
+                                          reply_markup=self.prepareKeyboard(movie.title))
         else:
-            await callback_query.message.edit_text(text='Try to guess!',
-                                                   reply_markup=self.prepareKeyboard(movie.title))
-            await callback_query.message.edit_media(media=file)
+            await Settings.BOT.send_photo(chat_id=self.message.from_user.id,
+                                          photo=file, caption='Try to guess',
+                                          reply_markup=self.prepareKeyboard(movie.title))
+        #     await self.message.delete()
 
     def prepareKeyboard(self, correctChoice):
         button1 = InlineKeyboardButton(correctChoice, callback_data='true')
@@ -100,8 +105,8 @@ class PhotoQuiz(Quiz):
 
 
 class DescrQuiz(Quiz):
-    def __init__(self, message: types.Message):
-        super().__init__(message)
+    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
+        super().__init__(message, user_id, canBeEdited)
 
     def startDescrQuiz(self):
         # TODO
@@ -109,8 +114,8 @@ class DescrQuiz(Quiz):
 
 
 class QuizFactory:
-    def createPhotoQuiz(self, message = None) -> PhotoQuiz:
-        return PhotoQuiz(message)
+    def createPhotoQuiz(self, message=None, user_id=None, canBeEdited=False) -> PhotoQuiz:
+        return PhotoQuiz(message, user_id, canBeEdited)
 
-    def createDescrQuiz(self, message = None) -> DescrQuiz:
-        return DescrQuiz(message)
+    def createDescrQuiz(self, message=None, user_id=None, canBeEdited=False) -> DescrQuiz:
+        return DescrQuiz(message, user_id, canBeEdited)

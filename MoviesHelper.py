@@ -20,18 +20,21 @@ class MoviesHelper:
 
     @classmethod
     def getMovieList(cls):
-        PAGES_AMOUNT = 3
+        PAGES_AMOUNT = 9
         movie = tmdb.Movies()
         for i in range(0, PAGES_AMOUNT):
-            responseArr = movie.top_rated(page=i+1)
+            responseArr = movie.top_rated(page=i + 1)
             size = 0
             for element in responseArr['results']:
-                size += 1
-            for i in range(0, size):
-                cls.listID.append(responseArr['results'][i]['id'])
+                if element['original_language'] == 'zh' or \
+                        element['original_language'] == 'ja' or \
+                        element['original_language'] == 'hi' or \
+                        element['original_language'] == 'ko':
+                    continue
+                else:
+                    cls.listID.append(element['id'])
 
     @classmethod
     def getRandomMovieIDFromList(cls) -> int:
         cls.getMovieList()
-        return cls.listID[random.randint(0, cls.listID.__len__()-1)]
-
+        return cls.listID[random.randint(0, cls.listID.__len__() - 1)]
