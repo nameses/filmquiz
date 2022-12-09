@@ -12,7 +12,7 @@ class MoviesHelper:
     @classmethod
     def getMovieList(cls):
         # 1 page = 20 movies
-        PAGES_AMOUNT = 10
+        PAGES_AMOUNT = 20
         movie = tmdb.Movies()
         for i in range(0, PAGES_AMOUNT):
             responseArr = movie.top_rated(page=i + 1)
@@ -21,7 +21,8 @@ class MoviesHelper:
                 if element['original_language'] == 'zh' or \
                         element['original_language'] == 'ja' or \
                         element['original_language'] == 'hi' or \
-                        element['original_language'] == 'ko':
+                        element['original_language'] == 'ko' or \
+                        element['adult'] == True:
                     continue
                 else:
                     cls.listID.append(element['id'])
