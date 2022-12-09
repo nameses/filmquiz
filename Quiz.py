@@ -36,9 +36,10 @@ class PhotoQuiz(Quiz):
         # if there are no images without text, get all ones
         if len(array['backdrops']) == 0:
             array = movie.images()
+        size = len(array['backdrops'])
         # form new query and get a file of random image of film from url
         new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
-            [randint(0, len(array['backdrops']) - 1)]['file_path']
+            [randint(0, size - 1) if size > 1 else 0]['file_path']
         file = InputFile.from_url(url=new_query)
         # to receive movie.title
         response = movie.info()

@@ -51,6 +51,10 @@ async def processButtonFalse(callback_query: types.CallbackQuery):
     await quiz.startQuiz()
 
 
+@Settings.DISPATCHER.message_handler()
+async def default(message: types.Message):
+    await message.answer(text=message.text.title())
+
 async def main():
     await Settings.DISPATCHER.start_polling(Settings.BOT)
 
