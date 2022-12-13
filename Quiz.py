@@ -77,11 +77,9 @@ class PhotoQuiz(Quiz):
         keyboard = InlineKeyboardMarkup()
         # sort buttons in random order
         listButtons = [button1, button2, button3, button4]
-        listIndexes = [0, 1, 2, 3]
-        for i in range(0, VARIANTS_QUANTITY):
-            randIndex = random.randint(0, listIndexes.__len__() - 1)
-            keyboard.add(listButtons[listIndexes[randIndex]])
-            listIndexes.remove(listIndexes[randIndex])
+        random.shuffle(listButtons)
+        for btn in listButtons:
+            keyboard.add(btn)
         return keyboard
 
 

@@ -31,7 +31,6 @@ class MoviesFinder:
         :return list:
         """
         list = []
-        # # 1/3 of quantity will be from similar list, everything else is random movies
         # quantitySimilarMovies = quantity // 3
         list.extend(self.__getSimilarMovieTitle(quantity=quantity, trueMovieID=trueMovieID, titleToAvoid=titleToAvoid))
         # list.extend(self.getRandomMovieTitle(quantity=quantity))
