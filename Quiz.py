@@ -12,22 +12,52 @@ tmdb.API_KEY = constants.TMDB_TOKEN
 
 
 class Quiz:
-    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
+    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
         self.message = message
         self.user_id = user_id
-        self.canBeEdited = canBeEdited
+        self.text_to_message = text_to_message
 
-    async def startQuiz(self):
-        pass
-
-
-class PhotoQuiz(Quiz):
-    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
-        super().__init__(message, user_id, canBeEdited)
         self.trueMovieID = None
         self.moviesFinder = MoviesFinder()
 
-    async def startQuiz(self):
+    async def start_quiz(self):
+        pass
+
+    def prepare_keyboard(self, correct_choice) -> InlineKeyboardMarkup:
+        """
+        Method, that returns a working inline keyboard with variants of films
+        :param correctChoice:
+        :return InlineKeyboardMarkup:
+        """
+        class_name = self.__class__.__name__
+        VARIANTS_QUANTITY = 4
+        # button with correct choice
+        button1 = InlineKeyboardButton(correct_choice, callback_data=class_name + 'True')
+        # get list of VARIANTS_QUANTITY movies' titles
+        list_titles = self.moviesFinder.getMovieVariants(quantity=VARIANTS_QUANTITY - 1,
+                                                         trueMovieID=self.trueMovieID,
+                                                         titleToAvoid=correct_choice)
+        # buttons with incorrect choices
+        button2 = InlineKeyboardButton(list_titles[0], callback_data=class_name + 'False')
+        button3 = InlineKeyboardButton(list_titles[1], callback_data=class_name + 'False')
+        button4 = InlineKeyboardButton(list_titles[2], callback_data=class_name + 'False')
+        # keyboard init
+        keyboard = InlineKeyboardMarkup()
+        # sort buttons in random order
+        list_buttons = [button1, button2, button3, button4]
+        random.shuffle(list_buttons)
+        for btn in list_buttons:
+            keyboard.add(btn)
+        return keyboard
+
+
+class PhotoQuiz(Quiz):
+    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
+        super().__init__(message, user_id, text_to_message)
+        # self.trueMovieID = None
+        # self.moviesFinder = MoviesFinder()
+
+    async def start_quiz(self):
         # id of movie with correct id
         self.trueMovieID = self.moviesFinder.getRandomMovieID()
         movie = tmdb.Movies(self.trueMovieID)
@@ -43,58 +73,32 @@ class PhotoQuiz(Quiz):
         file = InputFile.from_url(url=new_query)
         # to receive movie.title
         response = movie.info()
-        # delete, receive points and send a new quiz with points update or just send new quiz
-        if self.canBeEdited:
-            text = self.message.text.title()
-            await self.message.delete()
-            await Settings.BOT.send_photo(chat_id=self.user_id,
-                                          photo=file, caption=text,
-                                          reply_markup=self.prepareKeyboard(movie.title))
-        else:
-            await Settings.BOT.send_photo(chat_id=self.message.from_user.id,
-                                          photo=file, caption='Try to guess',
-                                          reply_markup=self.prepareKeyboard(movie.title))
+        # send a new quiz with points update or just send new quiz
+        await Settings.BOT.send_photo(chat_id=self.user_id,
+                                      photo=file, caption='<b>' + self.text_to_message + '</b>',
+                                      reply_markup=self.prepare_keyboard(movie.title),
+                                      parse_mode='HTML')
         await file.file.close()
-
-    def prepareKeyboard(self, correctChoice) -> InlineKeyboardMarkup:
-        """
-        Method, that returns a working inline keyboard with variants of films
-        :param correctChoice:
-        :return InlineKeyboardMarkup:
-        """
-        VARIANTS_QUANTITY = 4
-        # button with correct choice
-        button1 = InlineKeyboardButton(correctChoice, callback_data='true')
-        # get list of VARIANTS_QUANTITY movies' titles
-        listTitles = self.moviesFinder.getMovieVariants(quantity=VARIANTS_QUANTITY - 1,
-                                                        trueMovieID=self.trueMovieID,
-                                                        titleToAvoid=correctChoice)
-        # buttons with uncorrect choices
-        button2 = InlineKeyboardButton(listTitles[0], callback_data='false')
-        button3 = InlineKeyboardButton(listTitles[1], callback_data='false')
-        button4 = InlineKeyboardButton(listTitles[2], callback_data='false')
-        # keyboard init
-        keyboard = InlineKeyboardMarkup()
-        # sort buttons in random order
-        listButtons = [button1, button2, button3, button4]
-        random.shuffle(listButtons)
-        for btn in listButtons:
-            keyboard.add(btn)
-        return keyboard
 
 
 class DescrQuiz(Quiz):
-    def __init__(self, message: types.Message, user_id: str, canBeEdited: bool):
-        super().__init__(message, user_id, canBeEdited)
+    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
+        super().__init__(message, user_id, text_to_message)
+        # self.trueMovieID = None
+        # self.moviesFinder = MoviesFinder()
 
-    def startQuiz(self):
-        # TODO
-        pass
+    async def start_quiz(self):
+        self.trueMovieID = self.moviesFinder.getRandomMovieID()
+        movie = tmdb.Movies(self.trueMovieID).info()
+        await Settings.BOT.send_message(chat_id=self.user_id,
+                                        text='<b>' + self.text_to_message + '</b>\n' + movie['overview'],
+                                        reply_markup=self.prepare_keyboard(movie['title']),
+                                        parse_mode='HTML')
 
 
 class QuizFactory:
-    def createPhotoQuiz(self, message=None, user_id=None, canBeEdited=False) -> PhotoQuiz:
-        return PhotoQuiz(message, user_id, canBeEdited)
+    def create_photo_quiz(self, message=None, user_id=None, text_to_message=None) -> PhotoQuiz:
+        return PhotoQuiz(message, user_id, text_to_message)
 
-    def createDescrQuiz(self, message=None, user_id=None, canBeEdited=False) -> DescrQuiz:
-        return DescrQuiz(message, user_id, canBeEdited)
+    def create_descr_quiz(self, message=None, user_id=None, text_to_message=None) -> DescrQuiz:
+        return DescrQuiz(message, user_id, text_to_message)
