@@ -6,6 +6,8 @@ from settings import Settings
 from MainKeyboard import MainKeyboard
 
 logging.basicConfig(level=logging.INFO)
+
+STARTING_QUIZ_MESSAGE = 'Try to guess.'
 QUIZ_MESSAGE = 'Try to guess another quiz.'
 TRUE_MESSAGE = '+2 points.\n' + QUIZ_MESSAGE
 FALSE_MESSAGE = '-3 points.\n' + QUIZ_MESSAGE
@@ -15,7 +17,7 @@ FALSE_MESSAGE = '-3 points.\n' + QUIZ_MESSAGE
 @Settings.DISPATCHER.message_handler(lambda mes: mes.text == 'Photo Quiz')
 async def cmd_game_photo(message: types.Message):
     factory = Quiz.QuizFactory()
-    quiz = factory.create_photo_quiz(message, message.from_user.id, 'Try to guess.')
+    quiz = factory.create_photo_quiz(message, message.from_user.id, STARTING_QUIZ_MESSAGE)
     await quiz.start_quiz()
 
 
@@ -23,7 +25,7 @@ async def cmd_game_photo(message: types.Message):
 @Settings.DISPATCHER.message_handler(lambda mes: mes.text == 'Description Quiz')
 async def cmd_game_descr(message: types.Message):
     factory = Quiz.QuizFactory()
-    quiz = factory.create_descr_quiz(message, message.from_user.id, 'Try to guess.')
+    quiz = factory.create_descr_quiz(message, message.from_user.id, STARTING_QUIZ_MESSAGE)
     await quiz.start_quiz()
 
 

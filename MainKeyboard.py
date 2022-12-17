@@ -13,7 +13,7 @@ class MainKeyboard:
 
     @classmethod
     def getKeyboard(cls):
-        if cls.keyboard is not None:
+        if cls.keyboard:
             return cls.keyboard
         button1 = KeyboardButton('Photo Quiz')
         button2 = KeyboardButton('Description Quiz')

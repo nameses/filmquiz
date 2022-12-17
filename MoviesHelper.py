@@ -29,6 +29,6 @@ class MoviesHelper:
 
     @classmethod
     def getRandomMovieIDFromList(cls) -> int:
-        if cls.listID.__len__() == 0:
+        if not cls.listID.__len__():
             cls.getMovieList()
         return cls.listID[random.randint(0, cls.listID.__len__() - 1)]
