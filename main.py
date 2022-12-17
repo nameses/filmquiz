@@ -4,6 +4,7 @@ import logging
 import Quiz
 from settings import Settings
 from MainKeyboard import MainKeyboard
+from Statistic import Statistic
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,6 +19,12 @@ FALSE_MESSAGE = '-3 points.\n' + QUIZ_MESSAGE
 async def cmd_game_photo(message: types.Message):
     factory = Quiz.QuizFactory()
     quiz = factory.create_photo_quiz(message, message.from_user.id, STARTING_QUIZ_MESSAGE)
+
+    statistic = Statistic(message.from_user.id)
+    points = statistic.photo_quiz_points()
+    await message.answer(text=f'You have <b>{points}</b> points already.\n',
+                         parse_mode='HTML')
+
     await quiz.start_quiz()
 
 
@@ -26,12 +33,19 @@ async def cmd_game_photo(message: types.Message):
 async def cmd_game_descr(message: types.Message):
     factory = Quiz.QuizFactory()
     quiz = factory.create_descr_quiz(message, message.from_user.id, STARTING_QUIZ_MESSAGE)
+
+    statistic = Statistic(message.from_user.id)
+    points = statistic.description_quiz_points()
+    await message.answer(text=f'You have <b>{points}</b> points already.\n',
+                         parse_mode='HTML')
+
     await quiz.start_quiz()
 
 
 @Settings.DISPATCHER.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
-    await message.answer("Hello! This is telegram quiz bot. You will need to guess a film by an image",
+    await message.answer("Hello! This is telegram quiz bot. "
+                         "You will need to guess a film by an image or a description.",
                          reply_markup=MainKeyboard.getKeyboard())
 
 
@@ -43,6 +57,10 @@ async def process_photo_button_true(callback_query: types.CallbackQuery):
     # await mes.delete()
     factory = Quiz.QuizFactory()
     quiz = factory.create_photo_quiz(None, id, TRUE_MESSAGE)
+
+    statistic = Statistic(id)
+    statistic.updating_photo_points(True)
+
     await quiz.start_quiz()
 
 
@@ -54,6 +72,10 @@ async def process_photo_button_false(callback_query: types.CallbackQuery):
     # await mes.delete()
     factory = Quiz.QuizFactory()
     quiz = factory.create_photo_quiz(None, id, FALSE_MESSAGE)
+
+    statistic = Statistic(id)
+    statistic.updating_photo_points(False)
+
     await quiz.start_quiz()
 
 
@@ -65,6 +87,10 @@ async def process_description_button_true(callback_query: types.CallbackQuery):
     # await mes.delete()
     factory = Quiz.QuizFactory()
     quiz = factory.create_descr_quiz(None, id, TRUE_MESSAGE)
+
+    statistic = Statistic(id)
+    statistic.updating_description_points(True)
+
     await quiz.start_quiz()
 
 
@@ -76,7 +102,23 @@ async def process_description_button_false(callback_query: types.CallbackQuery):
     # await mes.delete()
     factory = Quiz.QuizFactory()
     quiz = factory.create_descr_quiz(None, id, FALSE_MESSAGE)
+
+    statistic = Statistic(id)
+    statistic.updating_description_points(False)
+
     await quiz.start_quiz()
+
+
+@Settings.DISPATCHER.message_handler(commands=['statistic'])
+@Settings.DISPATCHER.message_handler(lambda mes: mes.text == 'Statistic')
+async def statistic_command(message: types.Message):
+    id = message.from_user.id
+
+    statistic = Statistic(id)
+
+    await message.answer(text=f'You have <b>{statistic.photo_quiz_points()}</b> Photo Quiz points and '
+                              f'<b>{statistic.description_quiz_points()}</b> Description Quiz points.\n',
+                         parse_mode='HTML')
 
 
 @Settings.DISPATCHER.message_handler()
