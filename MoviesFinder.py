@@ -24,18 +24,12 @@ class MoviesFinder:
         :param title_to_avoid:
         :param trueMovieID:
         :param quantity:
-<<<<<<< HEAD
         :return:
-=======
-        :param titleToAvoid:
-        :return: list
->>>>>>> origin/master
         """
         FULL_QUANTITY = quantity+1
         self.list = [title_to_avoid]
         # get similar movies list
         movie = tmdb.Movies(trueMovieID)
-<<<<<<< HEAD
         similar_movies = movie.similar_movies()['results']
         size = len(similar_movies)
         for i in range(0, size):
@@ -43,7 +37,7 @@ class MoviesFinder:
             if len(self.list) == FULL_QUANTITY:
                 break
             # random similar movie
-            similar_movie = similar_movies[randint(0, size)]['title']
+            similar_movie = similar_movies[randint(0, size-1)]['title']
             # duplicate check
             if self.__duplicate_check(similar_movie):
                 continue
@@ -52,36 +46,6 @@ class MoviesFinder:
         if len(self.list) != FULL_QUANTITY:
             self.__extendWithRandom(FULL_QUANTITY-len(self.list))
         return self.list
-=======
-        responseArr = movie.similar_movies()
-        # responseArr['results'] is results array
-        # if list has 1 element -> add it to list
-        size = len(responseArr['results'])
-        if not size:
-            # get random movies
-            # checking for duplicate of titles is optional, probability of this is too low
-            list.extend(self.__getRandomMovieTitle(quantity=quantity, titleToAvoid=titleToAvoid))
-        elif size == 1 and quantity >= 2:
-            # 1 similar and other are random
-            # probability of duplicates is low too, check only for correct title
-            title = responseArr['results'][0]['title']
-            if title == titleToAvoid:
-                title = self.__getRandomMovieTitle(quantity=1, titleToAvoid=titleToAvoid)
-            list.append(title)
-            list.extend(self.__getRandomMovieTitle(quantity=quantity - 1, titleToAvoid=titleToAvoid))
-        elif size == 1 and quantity == 1:
-            # 1 similar movie
-            while True:
-                title = responseArr['results'][0]['title']
-                if title != titleToAvoid:
-                    break
-            list.append(title)
-        else:
-            # many random movies
-            for i in range(0, quantity):
-                list.append(responseArr['results'][randint(0, size - 1)]['title'])
-        return list
->>>>>>> origin/master
 
     def __extendWithRandom(self, quantity: int):
         """
@@ -89,7 +53,6 @@ class MoviesFinder:
         :param quantity:
         :return: list
         """
-<<<<<<< HEAD
         while True:
             if len(self.list) == quantity+1:
                 break
@@ -104,15 +67,3 @@ class MoviesFinder:
             if movie_to_avoid == movie:
                 return True
         return False
-=======
-        list = []
-        for i in range(0, quantity):
-            while True:
-                randMovieID = self.getRandomMovieID()
-                movie = tmdb.Movies(randMovieID)
-                title = movie.title
-                if title != titleToAvoid and title not in list:
-                    break
-            list.append(title)
-        return list
->>>>>>> origin/master

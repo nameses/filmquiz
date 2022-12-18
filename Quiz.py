@@ -86,8 +86,6 @@ class PhotoQuiz(Quiz):
 class DescrQuiz(Quiz):
     def __init__(self, message: types.Message, user_id: str, text_to_message: str):
         super().__init__(message, user_id, text_to_message)
-        # self.trueMovieID = None
-        # self.moviesFinder = MoviesFinder()
 
     async def start_quiz(self):
         self.trueMovieID = self.moviesFinder.getRandomMovieID()
