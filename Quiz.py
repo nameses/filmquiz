@@ -54,8 +54,6 @@ class Quiz:
 class PhotoQuiz(Quiz):
     def __init__(self, message: types.Message, user_id: str, text_to_message: str):
         super().__init__(message, user_id, text_to_message)
-        # self.trueMovieID = None
-        # self.moviesFinder = MoviesFinder()
 
     async def start_quiz(self):
         # iterate until found at least 1 movie image
@@ -97,8 +95,10 @@ class DescrQuiz(Quiz):
 
 
 class QuizFactory:
-    def create_photo_quiz(self, message=None, user_id=None, text_to_message=None) -> PhotoQuiz:
+    @classmethod
+    def create_photo_quiz(cls, message=None, user_id=None, text_to_message=None) -> PhotoQuiz:
         return PhotoQuiz(message, user_id, text_to_message)
 
-    def create_descr_quiz(self, message=None, user_id=None, text_to_message=None) -> DescrQuiz:
+    @classmethod
+    def create_descr_quiz(cls, message=None, user_id=None, text_to_message=None) -> DescrQuiz:
         return DescrQuiz(message, user_id, text_to_message)
