@@ -32,7 +32,7 @@ class TelegramBot(object):
         Settings.DISPATCHER.register_callback_query_handler(self.process_photo_button_true,
                                                             lambda mes: mes.data == 'PhotoQuizTrue')
         Settings.DISPATCHER.register_callback_query_handler(self.process_photo_button_false,
-                                                            lambda mes: mes.data == 'FalsePhotoQuiz')
+                                                            lambda mes: mes.data == 'PhotoQuizFalse')
         Settings.DISPATCHER.register_message_handler(self.statistic_command,
                                                      commands=['statistic'], state="*")
         Settings.DISPATCHER.register_message_handler(self.statistic_command,

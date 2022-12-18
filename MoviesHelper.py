@@ -17,7 +17,7 @@ class MoviesHelper:
         for i in range(0, PAGES_AMOUNT):
             responseArr = movie.top_rated(page=i + 1)
             for element in responseArr['results']:
-                if not element['original_language'] == ('zh' or 'ja' or 'hi' or 'ko') \
+                if not element['original_language'] in ('zh', 'ja', 'hi', 'ko') \
                         and not element['adult']:
                     cls.listID.append(element['id'])
 

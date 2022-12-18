@@ -37,14 +37,12 @@ class Quiz:
                                                              trueMovieID=self.trueMovieID,
                                                              title_to_avoid=correct_choice)
         # buttons with incorrect choices
-        button1 = InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')
-        button2 = InlineKeyboardButton(list_titles[1], callback_data=class_name + 'False')
-        button3 = InlineKeyboardButton(list_titles[2], callback_data=class_name + 'False')
-        button4 = InlineKeyboardButton(list_titles[3], callback_data=class_name + 'False')
+        list_buttons = [InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')]
+        for index in range(1, VARIANTS_QUANTITY):
+            list_buttons.append(InlineKeyboardButton(list_titles[index], callback_data=class_name + 'False'))
         # keyboard init
         keyboard = InlineKeyboardMarkup()
         # sort buttons in random order
-        list_buttons = [button1, button2, button3, button4]
         random.shuffle(list_buttons)
         for btn in list_buttons:
             keyboard.add(btn)
