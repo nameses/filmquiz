@@ -1,5 +1,5 @@
 import asyncio
-from aiogram import types
+from aiogram import types, executor
 import logging
 import Quiz
 from settings import Settings
@@ -126,9 +126,9 @@ async def default(message: types.Message):
     await message.answer(text=message.text.title())
 
 
-async def main():
-    await Settings.DISPATCHER.start_polling(Settings.BOT)
+def main():
+    executor.start_polling(Settings.DISPATCHER, skip_updates=True)
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()
