@@ -1,9 +1,8 @@
 from aiogram import types, executor
-import logging
 import Quiz
-from settings import Settings
 from MainKeyboard import MainKeyboard
 from Statistic import Statistic
+from settings import Settings
 
 STARTING_QUIZ_MESSAGE = 'Try to guess.'
 QUIZ_MESSAGE = 'Try to guess another quiz.'
@@ -16,27 +15,29 @@ class TelegramBot(object):
         self.register_handlers()
 
     def register_handlers(self):
-        Settings.DISPATCHER.register_message_handler(self.cmd_game_photo,
-                                                     commands=['game'], state="*")
-        Settings.DISPATCHER.register_message_handler(self.cmd_game_photo,
-                                                     lambda mes: mes.text == 'Photo Quiz', state="*")
-        Settings.DISPATCHER.register_message_handler(self.cmd_game_descr,
-                                                     commands=['game'], state="*")
-        Settings.DISPATCHER.register_message_handler(self.cmd_game_descr,
-                                                     lambda mes: mes.text == 'Description Quiz', state="*")
-        Settings.DISPATCHER.register_message_handler(self.cmd_start, commands=['start'], state="*")
-        Settings.DISPATCHER.register_callback_query_handler(self.process_description_button_true,
-                                                            lambda mes: mes.data == 'DescrQuizTrue')
-        Settings.DISPATCHER.register_callback_query_handler(self.process_description_button_false,
-                                                            lambda mes: mes.data == 'DescrQuizFalse')
-        Settings.DISPATCHER.register_callback_query_handler(self.process_photo_button_true,
-                                                            lambda mes: mes.data == 'PhotoQuizTrue')
-        Settings.DISPATCHER.register_callback_query_handler(self.process_photo_button_false,
-                                                            lambda mes: mes.data == 'PhotoQuizFalse')
-        Settings.DISPATCHER.register_message_handler(self.statistic_command,
-                                                     commands=['statistic'], state="*")
-        Settings.DISPATCHER.register_message_handler(self.statistic_command,
-                                                     lambda mes: mes.text == 'Statistic', state="*")
+        dispatcher_handler = Settings.DISPATCHER.register_message_handler
+        dispatcher_callback = Settings.DISPATCHER.register_callback_query_handler
+        dispatcher_handler(self.cmd_game_photo, commands=['game'], state="*")
+        dispatcher_handler(self.cmd_game_photo,
+                           lambda mes: mes.text == 'Photo Quiz',
+                           state="*")
+        dispatcher_handler(self.cmd_game_descr, commands=['game'], state="*")
+        dispatcher_handler(self.cmd_game_descr,
+                           lambda mes: mes.text == 'Description Quiz',
+                           state="*")
+        dispatcher_handler(self.cmd_start, commands=['start'], state="*")
+        dispatcher_callback(self.process_description_button_true,
+                            lambda mes: mes.data == 'DescrQuizTrue')
+        dispatcher_callback(self.process_description_button_false,
+                            lambda mes: mes.data == 'DescrQuizFalse')
+        dispatcher_callback(self.process_photo_button_true,
+                            lambda mes: mes.data == 'PhotoQuizTrue')
+        dispatcher_callback(self.process_photo_button_false,
+                            lambda mes: mes.data == 'PhotoQuizFalse')
+        dispatcher_handler(self.statistic_command, commands=['statistic'], state="*")
+        dispatcher_handler(self.statistic_command,
+                           lambda mes: mes.text == 'Statistic',
+                           state="*")
 
     def start_polling(self):
         executor.start_polling(Settings.DISPATCHER, skip_updates=True)
