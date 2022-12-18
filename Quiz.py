@@ -23,24 +23,24 @@ class Quiz:
     async def start_quiz(self):
         pass
 
-    def prepare_keyboard(self, correct_choice) -> InlineKeyboardMarkup:
+    def prepare_keyboard(self, correct_choice: str) -> InlineKeyboardMarkup:
         """
         Method, that returns a working inline keyboard with variants of films
-        :param correctChoice:
+        :param correct_choice:
         :return InlineKeyboardMarkup:
         """
         class_name = self.__class__.__name__
         VARIANTS_QUANTITY = 4
         # button with correct choice
-        button1 = InlineKeyboardButton(correct_choice, callback_data=class_name + 'True')
         # get list of VARIANTS_QUANTITY movies' titles
-        list_titles = self.moviesFinder.getMovieVariants(quantity=VARIANTS_QUANTITY - 1,
-                                                         trueMovieID=self.trueMovieID,
-                                                         titleToAvoid=correct_choice)
+        list_titles = self.moviesFinder.getSimilarMovieTitle(quantity=VARIANTS_QUANTITY - 1,
+                                                             trueMovieID=self.trueMovieID,
+                                                             title_to_avoid=correct_choice)
         # buttons with incorrect choices
-        button2 = InlineKeyboardButton(list_titles[0], callback_data=class_name + 'False')
-        button3 = InlineKeyboardButton(list_titles[1], callback_data=class_name + 'False')
-        button4 = InlineKeyboardButton(list_titles[2], callback_data=class_name + 'False')
+        button1 = InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')
+        button2 = InlineKeyboardButton(list_titles[1], callback_data=class_name + 'False')
+        button3 = InlineKeyboardButton(list_titles[2], callback_data=class_name + 'False')
+        button4 = InlineKeyboardButton(list_titles[3], callback_data=class_name + 'False')
         # keyboard init
         keyboard = InlineKeyboardMarkup()
         # sort buttons in random order
@@ -58,15 +58,17 @@ class PhotoQuiz(Quiz):
         # self.moviesFinder = MoviesFinder()
 
     async def start_quiz(self):
-        # id of movie with correct id
-        self.trueMovieID = self.moviesFinder.getRandomMovieID()
-        movie = tmdb.Movies(self.trueMovieID)
-        # get images to movie, without text
-        array = movie.images(include_image_language='null')
-        # if there are no images without text, get all ones
-        if len(array['backdrops']) == 0:
-            array = movie.images()
-        size = len(array['backdrops'])
+        # iterate until found at least 1 movie image
+        while True:
+            # id of movie with correct id
+            self.trueMovieID = self.moviesFinder.getRandomMovieID()
+            movie = tmdb.Movies(self.trueMovieID)
+            # get images to movie, without text
+            array = movie.images(include_image_language='null')
+            size = len(array['backdrops'])
+            # if size != 0, then found at least 1 image
+            if size != 0:
+                break
         # form new query and get a file of random image of film from url
         new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
             [randint(0, size - 1) if size > 1 else 0]['file_path']

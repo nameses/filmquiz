@@ -12,7 +12,7 @@ class MoviesHelper:
     @classmethod
     def getMovieList(cls):
         # 1 page = 20 movies
-        PAGES_AMOUNT = 20
+        PAGES_AMOUNT = 12
         movie = tmdb.Movies()
         for i in range(0, PAGES_AMOUNT):
             responseArr = movie.top_rated(page=i + 1)
