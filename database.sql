@@ -1,0 +1,10 @@
+DROP DATABASE FilmQuiz;
+CREATE DATABASE FilmQuiz;
+USE FilmQuiz;
+
+CREATE TABLE Person
+(
+PersonID INT NOT NULL PRIMARY KEY,
+PointsPhotoQuiz INT DEFAULT 0,
+PointsDescriptionQuiz INT DEFAULT 0
+);
