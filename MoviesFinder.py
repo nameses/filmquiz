@@ -24,7 +24,7 @@ class MoviesFinder:
         :param title_to_avoid:
         :param trueMovieID:
         :param quantity:
-        :return:
+        :return: list
         """
         FULL_QUANTITY = quantity+1
         self.list = [title_to_avoid]
@@ -39,28 +39,26 @@ class MoviesFinder:
             # random similar movie
             similar_movie = similar_movies[randint(0, size-1)]['title']
             # duplicate check
-            if self.__duplicate_check(similar_movie):
-                continue
-            self.list.append(similar_movie)
+            if not self.__duplicate_check(similar_movie):
+                self.list.append(similar_movie)
         # if similar_movies' array < quantity
         if len(self.list) != FULL_QUANTITY:
-            self.__extendWithRandom(FULL_QUANTITY-len(self.list))
+            self.__extendWithRandom(FULL_QUANTITY)
         return self.list
 
-    def __extendWithRandom(self, quantity: int):
+    def __extendWithRandom(self, full_quantity: int):
         """
         returns list of random movies of param quantity with title != param titleToAvoid
-        :param quantity:
+        :param full_quantity:
         :return: list
         """
         while True:
-            if len(self.list) == quantity+1:
+            if len(self.list) == full_quantity:
                 break
-            randMovieID = self.getRandomMovieID()
-            movie = tmdb.Movies(randMovieID).info()
-            if self.__duplicate_check(title := movie['title']):
-                continue
-            self.list.append(title)
+            rand_movie_id = self.getRandomMovieID()
+            movie = tmdb.Movies(rand_movie_id).info()
+            if not self.__duplicate_check(title := movie['title']):
+                self.list.append(title)
 
     def __duplicate_check(self, movie: str) -> bool:
         for movie_to_avoid in self.list:
