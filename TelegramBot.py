@@ -70,7 +70,7 @@ class TelegramBot(object):
     async def cmd_start(self, message: types.Message):
         await message.answer("Hello! This is telegram quiz bot. "
                              "You will need to guess a film by an image or a description.",
-                             reply_markup=MainKeyboard.getKeyboard())
+                             reply_markup=MainKeyboard.get_keyboard())
 
     # @Settings.DISPATCHER.callback_query_handler(lambda c: c.data == 'PhotoQuizTrue')
     async def process_photo_button_true(self, callback_query: types.CallbackQuery):

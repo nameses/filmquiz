@@ -12,13 +12,12 @@ class MainKeyboard:
     keyboard = None
 
     @classmethod
-    def getKeyboard(cls):
-        if cls.keyboard:
-            return cls.keyboard
-        button1 = KeyboardButton('Photo Quiz')
-        button2 = KeyboardButton('Description Quiz')
-        button3 = KeyboardButton('Statistic')
+    def get_keyboard(cls):
+        if not cls.keyboard:
+            button1 = KeyboardButton('Photo Quiz')
+            button2 = KeyboardButton('Description Quiz')
+            button3 = KeyboardButton('Statistic')
 
-        cls.keyboard = ReplyKeyboardMarkup() \
-            .add(button1).add(button2).add(button3)
+            cls.keyboard = ReplyKeyboardMarkup(resize_keyboard=True) \
+                .add(button1).add(button2).add(button3)
         return cls.keyboard
