@@ -6,12 +6,13 @@ import tmdbsimple as tmdb
 from MoviesFinder import MoviesFinder
 import constants
 from settings import Settings
+import abc
 
 tmdb.REQUESTS_TIMEOUT = (2, 5)
 tmdb.API_KEY = constants.TMDB_TOKEN
 
 
-class Quiz:
+class Quiz(abc.ABC):
     def __init__(self, message: types.Message, user_id: str, text_to_message: str):
         self.message = message
         self.user_id = user_id
@@ -20,6 +21,7 @@ class Quiz:
         self.trueMovieID = None
         self.moviesFinder = MoviesFinder()
 
+    @abc.abstractmethod
     async def start_quiz(self):
         pass
 
