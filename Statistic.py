@@ -6,7 +6,8 @@ class Statistic:
         self.id = id
         self.inserting_person()
 
-    def all_people(self):
+    @classmethod
+    def all_people(cls):
         mycursor.execute('SELECT * FROM Person')
         result = [item[0] for item in mycursor.fetchall()]
         return result
