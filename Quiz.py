@@ -13,7 +13,7 @@ tmdb.API_KEY = constants.TMDB_TOKEN
 
 
 class Quiz(abc.ABC):
-    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
+    def __init__(self, message: types.Message, user_id: int, text_to_message: str):
         self.message = message
         self.user_id = user_id
         self.text_to_message = text_to_message
@@ -37,7 +37,9 @@ class Quiz(abc.ABC):
         # get list of VARIANTS_QUANTITY movies' titles
         list_titles = self.moviesFinder.getSimilarMovieTitle(quantity=VARIANTS_QUANTITY - 1,
                                                              trueMovieID=self.trueMovieID,
-                                                             title_to_avoid=correct_choice)
+                                                             title_to_avoid=correct_choice,
+                                                             person_id=self.user_id,
+                                                             type_quiz=class_name)
         # buttons with incorrect choices
         list_buttons = [InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')]
         for index in range(1, VARIANTS_QUANTITY):
@@ -52,7 +54,7 @@ class Quiz(abc.ABC):
 
 
 class PhotoQuiz(Quiz):
-    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
+    def __init__(self, message: types.Message, user_id: int, text_to_message: str):
         super().__init__(message, user_id, text_to_message)
 
     async def start_quiz(self):
@@ -82,7 +84,7 @@ class PhotoQuiz(Quiz):
 
 
 class DescrQuiz(Quiz):
-    def __init__(self, message: types.Message, user_id: str, text_to_message: str):
+    def __init__(self, message: types.Message, user_id: int, text_to_message: str):
         super().__init__(message, user_id, text_to_message)
 
     async def start_quiz(self):

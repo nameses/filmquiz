@@ -51,3 +51,35 @@ class Statistic:
                         f'WHERE PersonID="{self.id}"'
         mycursor.execute(update_person)
         db.commit()
+
+    def updating_dq_options(self, ids):
+        # update_person = f'UPDATE Person SET PointsPhotoQuiz={ids} ' \
+        #                 f'WHERE PersonID="{self.id}"'
+        for i, id in enumerate(ids):
+            update_person = f'UPDATE Person SET dq{i+1}={id} ' \
+                            f'WHERE PersonID="{self.id}"'
+            mycursor.execute(update_person)
+            db.commit()
+
+    def updating_pq_options(self, ids):
+        # update_person = f'UPDATE Person SET PointsPhotoQuiz={ids} ' \
+        #                 f'WHERE PersonID="{self.id}"'
+        for i, id in enumerate(ids):
+            update_person = f'UPDATE Person SET pq{i+1}={id} ' \
+                            f'WHERE PersonID="{self.id}"'
+            mycursor.execute(update_person)
+            db.commit()
+
+    def get_pq_ids(self):
+        ids = []
+        for i in range(1, 5):
+            mycursor.execute(f'SELECT pq{i} FROM Person WHERE PersonID={self.id}')
+            ids.append([item[0] for item in mycursor.fetchall() or None])
+        return ids
+
+    def get_dq_ids(self):
+        ids = []
+        for i in range(1, 5):
+            mycursor.execute(f'SELECT dq{i} FROM Person WHERE PersonID={self.id}')
+            ids.append([item[0] for item in mycursor.fetchall() or None])
+        return ids
