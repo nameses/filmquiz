@@ -74,12 +74,12 @@ class Statistic:
         ids = []
         for i in range(1, 5):
             mycursor.execute(f'SELECT pq{i} FROM Person WHERE PersonID={self.id}')
-            ids.append([item[0] for item in mycursor.fetchall() or None])
+            ids.extend([item[0] for item in mycursor.fetchall() or None])
         return ids
 
     def get_dq_ids(self):
         ids = []
         for i in range(1, 5):
             mycursor.execute(f'SELECT dq{i} FROM Person WHERE PersonID={self.id}')
-            ids.append([item[0] for item in mycursor.fetchall() or None])
+            ids.extend([item[0] for item in mycursor.fetchall() or None])
         return ids

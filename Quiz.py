@@ -7,6 +7,7 @@ from MoviesFinder import MoviesFinder
 import constants
 from settings import Settings
 import abc
+from Statistic import Statistic
 
 tmdb.REQUESTS_TIMEOUT = (2, 5)
 tmdb.API_KEY = constants.TMDB_TOKEN
@@ -21,6 +22,8 @@ class Quiz(abc.ABC):
         self.trueMovieID = None
         self.moviesFinder = MoviesFinder()
 
+        self.existing_ids = None
+
     @abc.abstractmethod
     async def start_quiz(self):
         pass
@@ -33,24 +36,36 @@ class Quiz(abc.ABC):
         """
         class_name = self.__class__.__name__
         VARIANTS_QUANTITY = 4
-        # button with correct choice
-        # get list of VARIANTS_QUANTITY movies' titles
-        list_titles = self.moviesFinder.getSimilarMovieTitle(quantity=VARIANTS_QUANTITY - 1,
-                                                             trueMovieID=self.trueMovieID,
-                                                             title_to_avoid=correct_choice,
-                                                             person_id=self.user_id,
-                                                             type_quiz=class_name)
-        # buttons with incorrect choices
-        list_buttons = [InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')]
-        for index in range(1, VARIANTS_QUANTITY):
-            list_buttons.append(InlineKeyboardButton(list_titles[index], callback_data=class_name + 'False'))
-        # keyboard init
-        keyboard = InlineKeyboardMarkup()
-        # sort buttons in random order
-        random.shuffle(list_buttons)
-        for btn in list_buttons:
-            keyboard.add(btn)
-        return keyboard
+        if not self.existing_ids:
+            # button with correct choice
+            # get list of VARIANTS_QUANTITY movies' titles
+            list_titles = self.moviesFinder.getSimilarMovieTitle(quantity=VARIANTS_QUANTITY - 1,
+                                                                 trueMovieID=self.trueMovieID,
+                                                                 title_to_avoid=correct_choice,
+                                                                 person_id=self.user_id,
+                                                                 type_quiz=class_name)
+            # buttons with incorrect choices
+            list_buttons = [InlineKeyboardButton(list_titles[0], callback_data=class_name + 'True')]
+            for index in range(1, VARIANTS_QUANTITY):
+                list_buttons.append(InlineKeyboardButton(list_titles[index], callback_data=class_name + 'False'))
+            # keyboard init
+            keyboard = InlineKeyboardMarkup()
+            # sort buttons in random order
+            random.shuffle(list_buttons)
+            for btn in list_buttons:
+                keyboard.add(btn)
+            return keyboard
+        else:
+            movie = tmdb.Movies(self.existing_ids[0])
+            list_buttons = [InlineKeyboardButton(movie.info()['title'], callback_data=class_name + 'True')]
+            for index in range(1, VARIANTS_QUANTITY):
+                movie = tmdb.Movies(self.existing_ids[index])
+                list_buttons.append(InlineKeyboardButton(movie.info()['title'], callback_data=class_name + 'False'))
+            keyboard = InlineKeyboardMarkup()
+            random.shuffle(list_buttons)
+            for btn in list_buttons:
+                keyboard.add(btn)
+            return keyboard
 
 
 class PhotoQuiz(Quiz):
@@ -82,6 +97,21 @@ class PhotoQuiz(Quiz):
                                       parse_mode='HTML')
         await file.file.close()
 
+    async def resend_quiz(self):
+        statistic = Statistic(self.user_id)
+        self.existing_ids = statistic.get_pq_ids()
+        self.trueMovieID = self.existing_ids[0]
+        movie = tmdb.Movies(self.trueMovieID)
+        array = movie.images(include_image_language='null')
+        size = len(array['backdrops'])
+        new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
+            [randint(0, size - 1) if size > 1 else 0]['file_path']
+        file = InputFile.from_url(url=new_query)
+        await Settings.BOT.send_photo(chat_id=self.user_id,
+                                      photo=file, caption='<b>' + self.text_to_message + '</b>',
+                                      reply_markup=self.prepare_keyboard(movie.info()['title']),
+                                      parse_mode='HTML')
+        await file.file.close()
 
 class DescrQuiz(Quiz):
     def __init__(self, message: types.Message, user_id: int, text_to_message: str):
@@ -89,6 +119,16 @@ class DescrQuiz(Quiz):
 
     async def start_quiz(self):
         self.trueMovieID = self.moviesFinder.getRandomMovieID()
+        movie = tmdb.Movies(self.trueMovieID).info()
+        await Settings.BOT.send_message(chat_id=self.user_id,
+                                        text='<b>' + self.text_to_message + '</b>\n' + movie['overview'],
+                                        reply_markup=self.prepare_keyboard(movie['title']),
+                                        parse_mode='HTML')
+
+    async def resend_quiz(self):
+        statistic = Statistic(self.user_id)
+        self.existing_ids = statistic.get_dq_ids()
+        self.trueMovieID = self.existing_ids[0]
         movie = tmdb.Movies(self.trueMovieID).info()
         await Settings.BOT.send_message(chat_id=self.user_id,
                                         text='<b>' + self.text_to_message + '</b>\n' + movie['overview'],
