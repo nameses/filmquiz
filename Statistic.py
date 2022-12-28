@@ -70,6 +70,12 @@ class Statistic:
             mycursor.execute(update_person)
             db.commit()
 
+    def updating_fileid(self, value):
+        update_person = f'UPDATE Person SET fileID="{value}" ' \
+                        f'WHERE PersonID="{self.id}"'
+        mycursor.execute(update_person)
+        db.commit()
+
     def get_pq_ids(self):
         ids = []
         for i in range(1, 5):
@@ -83,3 +89,8 @@ class Statistic:
             mycursor.execute(f'SELECT dq{i} FROM Person WHERE PersonID={self.id}')
             ids.extend([item[0] for item in mycursor.fetchall() or None])
         return ids
+
+    def get_fileid(self):
+        mycursor.execute(f'SELECT fileID FROM Person WHERE PersonID={self.id}')
+        result = [item[0] for item in mycursor.fetchall() or None]
+        return result[0]

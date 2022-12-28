@@ -84,9 +84,13 @@ class PhotoQuiz(Quiz):
             if size != 0:
                 break
         # form new query and get a file of random image of film from url
-        new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
+        random_image = array['backdrops'] \
             [randint(0, size - 1) if size > 1 else 0]['file_path']
+        new_query = 'https://image.tmdb.org/t/p/original' + random_image
         file = InputFile.from_url(url=new_query)
+        # save file to our database
+        statistic = Statistic(self.user_id)
+        statistic.updating_fileid(random_image)
         # to receive movie.title
         response = movie.info()
         # send a new quiz with points update or just send new quiz
@@ -101,16 +105,14 @@ class PhotoQuiz(Quiz):
         self.existing_ids = statistic.get_pq_ids()
         self.trueMovieID = self.existing_ids[0]
         movie = tmdb.Movies(self.trueMovieID)
-        array = movie.images(include_image_language='null')
-        size = len(array['backdrops'])
-        new_query = 'https://image.tmdb.org/t/p/original' + array['backdrops'] \
-            [randint(0, size - 1) if size > 1 else 0]['file_path']
+        new_query = 'https://image.tmdb.org/t/p/original' + statistic.get_fileid()
         file = InputFile.from_url(url=new_query)
         await Settings.BOT.send_photo(chat_id=self.user_id,
                                       photo=file, caption='<b>' + self.text_to_message + '</b>',
                                       reply_markup=self.prepare_keyboard(movie.info()['title']),
                                       parse_mode='HTML')
         await file.file.close()
+
 
 class DescrQuiz(Quiz):
     def __init__(self, message: types.Message, user_id: int, text_to_message: str):
