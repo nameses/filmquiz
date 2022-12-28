@@ -84,8 +84,9 @@ class PhotoQuiz(Quiz):
             if size != 0:
                 break
         # form new query and get a file of random image of film from url
-        random_image = array['backdrops'] \
-            [randint(0, size - 1) if size > 1 else 0]['file_path']
+        random_image = random.choice(array['backdrops'])['file_path']
+        # random_image = array['backdrops'] \
+        #     [randint(0, size - 1) if size > 1 else 0]['file_path']
         new_query = 'https://image.tmdb.org/t/p/original' + random_image
         file = InputFile.from_url(url=new_query)
         # save file to our database
