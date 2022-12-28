@@ -52,7 +52,7 @@ class TelegramBot(object):
         await message.answer(text=f'You have <b>{points}</b> points already.\n',
                              parse_mode='HTML')
 
-        if statistic.get_pq_ids():
+        if not statistic.get_pq_ids():
             await quiz.resend_quiz()
         else:
             await quiz.start_quiz()
@@ -67,7 +67,7 @@ class TelegramBot(object):
         await message.answer(text=f'You have <b>{points}</b> points already.\n',
                              parse_mode='HTML')
 
-        if statistic.get_dq_ids():
+        if not statistic.get_dq_ids():
             await quiz.resend_quiz()
         else:
             await quiz.start_quiz()
