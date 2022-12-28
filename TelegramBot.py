@@ -52,10 +52,10 @@ class TelegramBot(object):
         await message.answer(text=f'You have <b>{points}</b> points already.\n',
                              parse_mode='HTML')
 
-        if not statistic.get_pq_ids():
-            await quiz.resend_quiz()
-        else:
+        if None in statistic.get_pq_ids():
             await quiz.start_quiz()
+        else:
+            await quiz.resend_quiz()
 
     # @Settings.DISPATCHER.message_handler(content_types=types.ContentType.TEXT, commands=["game"])
     # @Settings.DISPATCHER.message_handler(lambda mes: mes.text == 'Description Quiz')
@@ -67,10 +67,10 @@ class TelegramBot(object):
         await message.answer(text=f'You have <b>{points}</b> points already.\n',
                              parse_mode='HTML')
 
-        if not statistic.get_dq_ids():
-            await quiz.resend_quiz()
-        else:
+        if None in statistic.get_dq_ids():
             await quiz.start_quiz()
+        else:
+            await quiz.resend_quiz()
 
     # @Settings.DISPATCHER.message_handler(commands=["start"])
     async def cmd_start(self, message: types.Message):
