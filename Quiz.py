@@ -56,8 +56,7 @@ class Quiz(abc.ABC):
                 keyboard.add(btn)
             return keyboard
         else:
-            movie = tmdb.Movies(self.existing_ids[0])
-            list_buttons = [InlineKeyboardButton(movie.info()['title'], callback_data=class_name + 'True')]
+            list_buttons = [InlineKeyboardButton(correct_choice, callback_data=class_name + 'True')]
             for index in range(1, VARIANTS_QUANTITY):
                 movie = tmdb.Movies(self.existing_ids[index])
                 list_buttons.append(InlineKeyboardButton(movie.info()['title'], callback_data=class_name + 'False'))
